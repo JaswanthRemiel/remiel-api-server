@@ -7,7 +7,7 @@ import roasthubRoute from './routes/roasthub.js';
 dotenv.config();
 const app = express();
 
-const allowedOrigins = ['https://remiel.fyi']; 
+const allowedOrigins = ['/^https:\/\/.*\.remiel\.fyi$/']; 
 
 app.use(cors({
   origin: function (origin, callback) {
