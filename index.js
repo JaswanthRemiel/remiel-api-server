@@ -7,7 +7,17 @@ import roasthubRoute from './routes/roasthub.js';
 dotenv.config();
 const app = express();
 
-app.use(cors({ origin: ['https://roasthub.vercel.app'] }));
+const allowedOrigins = ['https://remiel.fyi']; 
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 app.use(express.json());
 
 app.use('/roasthub', roasthubRoute);
