@@ -25,7 +25,6 @@ ${profileDetails}
 
 Be direct, be mean. Just return the roast in plain text.`;
 
-
     const roastRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
