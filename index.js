@@ -35,14 +35,26 @@ export default async ({ req, res, log, error }) => {
       path: req.path,
     };
 
+    let responseData = null;
+    let statusCode = 200;
+
     const mockRes = {
-      status: (code) => ({
-        json: (data) => res.json(data, code),
-      }),
-      json: (data) => res.json(data),
+      status: (code) => {
+        statusCode = code;
+        return {
+          json: (data) => {
+            responseData = data;
+          },
+        };
+      },
+      json: (data) => {
+        responseData = data;
+      },
     };
 
     await route[method](mockReq, mockRes);
+
+    return res.json(responseData || {}, statusCode);
   } catch (err) {
     error(`Error: ${err.message}`);
     return res.json({ error: err.message || "Internal server error" }, 500);

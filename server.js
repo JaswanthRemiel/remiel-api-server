@@ -8,7 +8,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow all origins
 app.use(cors());
 app.use(express.json());
 app.post("/roasthub/generate", generateRoast);
