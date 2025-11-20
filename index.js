@@ -13,14 +13,25 @@ export default async ({ req, res, log, error }) => {
 
     log(`${method} ${path}`);
 
+    const origin = req.headers["origin"] || req.headers["Origin"] || "";
+    const allowedDomainRegex = /^https?:\/\/([a-z0-9-]+\.)?remiel\.work$/i;
+
+    const isAllowed = allowedDomainRegex.test(origin);
+
     res.headers = {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": isAllowed ? origin : "https://remiel.work",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Credentials": "true",
     };
 
     if (method === "OPTIONS") {
       return res.send("", 204);
+    }
+
+    if (!isAllowed && origin) {
+      log(`Blocked request from unauthorized origin: ${origin}`);
+      return res.json({ error: "Unauthorized origin" }, 403);
     }
 
     const route = routes[path];
