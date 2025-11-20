@@ -1,7 +1,7 @@
 import { generateRoast } from "./projects/roasthub/roasthub.js";
 
 const routes = {
-  "/roasthub": {
+  "/roasthub/generate": {
     POST: generateRoast,
   },
 };
@@ -13,16 +13,11 @@ export default async ({ req, res, log, error }) => {
 
     log(`${method} ${path}`);
 
-    const allowedOrigin = "https://remiel.work";
-    const origin = req.headers["origin"] || req.headers["Origin"];
-
-    if (origin === allowedOrigin || !origin) {
-      res.headers = {
-        "Access-Control-Allow-Origin": origin || allowedOrigin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      };
-    }
+    res.headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
 
     if (method === "OPTIONS") {
       return res.send("", 204);
