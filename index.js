@@ -18,36 +18,40 @@ export default async ({ req, res, log, error }) => {
 
     const isAllowed = allowedDomainRegex.test(origin) || !origin;
 
+    // Set CORS headers - Appwrite requires setting headers object directly
+    const corsHeaders = {
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+
     if (isAllowed && origin) {
-      res.headers = {
-        "Access-Control-Allow-Origin": origin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Credentials": "true",
-      };
+      corsHeaders["Access-Control-Allow-Origin"] = origin;
+      corsHeaders["Access-Control-Allow-Credentials"] = "true";
     } else if (isAllowed) {
-      res.headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      };
+      corsHeaders["Access-Control-Allow-Origin"] = "*";
+    } else if (origin) {
+      // Unauthorized origin
+      corsHeaders["Access-Control-Allow-Origin"] = "https://remiel.work";
     }
 
+    // Handle preflight OPTIONS request
     if (method === "OPTIONS") {
-      if (!isAllowed && origin) {
-        return res.json({ error: "Unauthorized origin" }, 403);
-      }
-      return res.send("", 204);
+      return res.text("", 204, corsHeaders);
     }
 
+    // Block unauthorized origins for actual requests
     if (!isAllowed && origin) {
       log(`Blocked request from unauthorized origin: ${origin}`);
-      return res.json({ error: "Unauthorized origin" }, 403);
+      return res.json({ error: "Unauthorized origin" }, 403, corsHeaders);
     }
 
     const route = routes[path];
     if (!route || !route[method]) {
-      return res.json({ error: `Route ${method} ${path} not found` }, 404);
+      return res.json(
+        { error: `Route ${method} ${path} not found` },
+        404,
+        corsHeaders
+      );
     }
 
     const mockReq = {
@@ -76,9 +80,18 @@ export default async ({ req, res, log, error }) => {
 
     await route[method](mockReq, mockRes);
 
-    return res.json(responseData || {}, statusCode);
+    return res.json(responseData || {}, statusCode, corsHeaders);
   } catch (err) {
     error(`Error: ${err.message}`);
-    return res.json({ error: err.message || "Internal server error" }, 500);
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    };
+    return res.json(
+      { error: err.message || "Internal server error" },
+      500,
+      corsHeaders
+    );
   }
 };
