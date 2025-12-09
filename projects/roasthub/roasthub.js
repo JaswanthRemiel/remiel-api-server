@@ -26,7 +26,7 @@ export const generateRoast = async (req, res) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "x-ai/grok-4.1-fast",
+          model: "amazon/nova-2-lite-v1:free",
           messages: [
             {
               role: "user",
